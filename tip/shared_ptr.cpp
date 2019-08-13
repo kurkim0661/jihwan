@@ -53,3 +53,4 @@ han.reset(); // shared_ptr인 han을 해제함.
 
 cout << "현재 소유자 수 : " << hong.use_count() << endl; // 1
 
+출처 :http://tcpschool.com/cpp/cpp_template_smartPointer
