@@ -6,3 +6,7 @@ c++ 표준에서 lvalue의 의미는 표현식을 거치고 나서도 지속적�
 
 우리가 기존에 사용하던 참조자인 &는 lvalue에서만 사용이 가능하다. 그렇다면 rvalue는 어떤 방식을 써야할까?
 rvalue는 &&를 사용하여 참조할 수 있다. 
+
+  
+  https://spikez.tistory.com/305 참조 사이트. 
+rvalue 참조의 활용 및 단점.
