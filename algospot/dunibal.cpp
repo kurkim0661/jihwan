@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 			cin>>tt[i];
 		}
 		for(int i = 0; i < t; i++) {
-			cout<<precision(8);
+			cout.precision(8);
 			cout<<detect(tt[i],d)<<" ";
 		}
 		cout<<endl;
