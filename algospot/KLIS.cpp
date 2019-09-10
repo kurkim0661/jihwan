@@ -10,6 +10,7 @@ int S[101];
 int n;
 int cachelen[101];
 int cacheCnt[101];
+const int MAX = 2000000000 + 1;
 
 int LISlen(int start) {
 	if(start == n) return 0;
@@ -25,14 +26,14 @@ int LISlen(int start) {
 }
 
 int LIScount(int start) {
-	if(start == n) return 0;
+	if(LISlen(start) == 1) return 1;
 	int& ret = cacheCnt[start];
 	if(ret != -1) return ret;
 	ret = 0;
 	for(int next = start + 1; next < n; ++next) {
 			if((start == -1 ||S[start] < S[next]) 
 			&&	LIS(start) == LIS(next) + 1 ) {
-				ret = max(ret, LIScount(next) + 1);
+				ret = min<long long>(MAX, (long long)ret + LIScount(next));
 		}
 	}
 	return ret;
