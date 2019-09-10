@@ -39,6 +39,7 @@ int main(void) {
 	while(tc--) {
 		cin>>n>>m>>k;
 		fill();
+		cout<<morse()<<endl;
 		
 	}
 	
