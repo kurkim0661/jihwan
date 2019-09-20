@@ -1,60 +1,60 @@
 #include <iostream>
-#include <cstdio>
 #include <vector>
+#include <cstring>
 #include <algorithm>
-#include <functional>
 
 using namespace std;
+int TC;
+int N;
+int M;
 
-bool sort_pred(const pair<int,int>& left, const pair<int,int>& right)
-{
-    return left.first > right.first;
+vecotr<pair<int,int> > data[100];
+
+bool cond(const pair<int,int>& a, const pair<int,int>& b) {
+	return a.second>b.second;
 }
 
-int main(){
-    int C;
-    cin >> C;
+int main(void) {
+	cin>>TC;
+	cin>>N>>M;
+	int price;
+	int point;
+	while(TC--) {
+		for(int i = 0; i < M; i++) {
+			data[i].clear();
+		}
 
-    vector< pair<int,int> > data[100];
+		for(int i = 0; i < N; i++) {
+			for(int j = 0; j < M; j++) {
+				cin>>priche>>point;
+				data[j].push_back(make_pair(price, point));
+			}
+		}
+		for(int j = 0; j < M; j++) { 
+			sort(data[j].begin(), data[j].end(), cond);
+		}
+		
+		for(int i = 1; i < N; i++) {
+			for(int j = 0; j < M; j++) {
+				if(data[j][i - 1].second >= data[j][i].first) {
+					data[j][i].second += data[j][i - 1].second - data[j][i].first;
+					data[j][i].first = data[j][i - 1].first;
+				}
+				else {
+					data[j][i].first += data[j][i - 1].frist - data[j][i - 1].second;
+				}
+			}
+		}
 
-    while ( C-- )    {
-        int N, M ;
-        cin >> N >> M;
+		int minVal = data[0][N-1].first;
 
-        for ( int i = 0; i < M; i++ )
-            data[i].clear();
+		for(int i = 1; i < M; i++) {
+			minVal = min(minVal, data[i][N-1]);
+		}
 
-        for ( int i = 0; i < N; i++ )        {
-            for ( int j = 0; j < M; j++ )            {
-                int price, point;
-                cin >> price >> point;
-                data[j].push_back( make_pair(point,price));
-            }
-        }
-
-        for ( int i = 0; i < M; i++ )
-            sort(data[i].begin(), data[i].end(), sort_pred);
-
-        for ( int i =1; i < N; i++ )        {
-            for ( int m = 0; m < M; m++)            {
-                if ( data[m][i].second < data[m][i-1].first )                {
-                    data[m][i].first += data[m][i-1].first - data[m][i].second;
-                    data[m][i].second = data[m][i-1].second;
-                }
-                else {
-                    data[m][i].second += data[m][i-1].second - data[m][i-1].first;
-
-                }
-            }
-        }
-
-        int minVal = data[0][N-1].second;
-        for ( int i = 1; i < M; i++ )        {
-            if ( data[i][N-1].second < minVal )
-                minVal = data[i][N-1].second;
-        }
-
-        cout << minVal << endl;
-
-    }
+		cout<<minVal<<endl;
+		
+	}
+	
+	
 }
