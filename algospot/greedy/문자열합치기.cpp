@@ -13,7 +13,7 @@ priority_queue<int, vector<int>, greater<int>) pq;
 
 int solve(void) {
 	int ret = 0;
-	while(pq.size() != 0) {
+	while(pq.empty() == 1) {
 		int min1 = pq.top; pq.pop;
 		int min2 = pq.top; pq.pop;
 		int sum = min1 + min2;
