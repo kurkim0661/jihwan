@@ -136,3 +136,50 @@ int main(void)
 
 }
 
+
+/////////////////////////
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int TC;
+int N;
+int M;
+double pos[201]; //중계소의 위치.
+
+double ret;
+int main (void) {
+	cin>>TC;
+	while(TC--) {
+		cin>>N>>M;
+		for(int i = 0; i < N; i++) {
+			cin>>pos[i];
+		}
+		double low = 0; double high = 241;
+		while(low <= high) {
+			int cnt = 1;
+			double mid = (low + high)/2;
+			double temp = 0;
+			for(int i = 1 ; i < M; i++) {
+				temp += pos[i] - pos[i - 1];
+				if(temp >= mid) {
+					cnt++;
+					base = 0;
+				}
+			}
+				
+			if(cnt >= N) {
+				ret = low;
+				low = mid + 1;
+			}
+			else {
+				high = mid - 1;
+			}
+			
+		}
+		cout.precision(2);
+		cout<<ret<<endl;
+	}
+}
