@@ -9,7 +9,7 @@ int M;
 double P;
 
 bool calculate(double n, int m, double c) {
-	if(m < 0) {
+	if(m == 0) {
 		if(n<=0) {
 			return true;	
 		}
