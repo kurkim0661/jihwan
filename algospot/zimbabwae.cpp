@@ -1,54 +1,72 @@
 #include <iostream>
-#include <cstring>
+#include <vector>
+#include <algorithm>
 #include <string>
-#include <algorithm> 
-/* run this program using the console pauser or add your own getch, system("pause") or input loop */
+#include <cstring>
 using namespace std;
+int TC;
 
-const int MAX = 1000000007;
-int tc;
-int n;
+int m; // 2<= m <= 20
+int cache[2][1<<14][20];
 string e;
-string digit;
-int m;
-int cache[2][20][1<<14];
+string digits;
+const int MOD = 100000000007;
 
-int solve(int mod, int less, int index, int taken) {
-	if(index == n) {
-		return (less && mod == 0) ? 1:0;	
+int solve(int idx, int mod, int less, int used) {
+	if(index == N) {
+		return (less && mod ==0) ? 1:0;
 	}
-	int& ret = cache[less][mod][taken];
-	if(ret  != -1) {
-		return ret;	
-	}
+
+	int& ret = cache[less][used][mod];
+	if(ret != -1) return ret;
 	ret = 0;
-	for(int next = 0; next<n; next++) {
-		if(taken & 1<<next == 0) {
-			if(!less && e[index] < digit[next])	{
+	for(int next = 0; next < e.size(); next++) {
+		if((used & (1<<next)) == 0) {
+			if(!less && e[idx] < digits[next]) {
 				continue;
 			}
-			if(next>0 && digit[next-1] == digit[next]
-				&& (taken & (1<<(next-1))) == 0) {
-				continue;	
-			}
-			int nexttaken = taken | (1<<next); 
-			int nextmod = (mod * 10 + digit[next] - '0') % m;
-			int nextless = less || e[index] > digit[next];
-			ret += solve(nextmod, nextless, index + 1, nexttaken);
-			ret %= MAX;
+		if(next > 0 && digits[next - 1] == digits[next] && (taken & (1<<next - 1) == 0)) {
+			continue;
+		}		
+		int nextless = (less || e[idx] > digits[next]);
+		int nextMod = (mod*10 + e[next] - '0')%m;
+		int nextUsed = used | 1<<next;
+		ret += solve(next, nextMod, nextless, nextUsed);
+		ret %= MOD;
+		
 		}
 	}
 	return ret;
 }
 
-int main(int argc, char** argv) {
-	cin>>tc;
-	
-	while(tc--) {
-		cin>>e>>m;
-		n = e.size();
-		e=digit;
-		sort(digit.begin(),digit.end());			
-	}
-	return 0;
+
+
+int main(void)
+{
+        int test_case;
+        cin >> test_case;
+        if (test_case < 0 || test_case>50)
+               exit(-1);
+ 
+        for (int i = 0; i < test_case; i++)
+        {
+               N = 0;
+               vector<long long> candidate;
+               memset(cache, -1, sizeof(cache));
+               cin >> egg >> M;
+               long long num = atoll(egg.c_str());
+               candidate.clear();
+               while (num > 0)
+               {
+                       candidate.push_back(num % 10);
+                       num /= 10;
+                       N++;
+               }
+               sort(candidate.begin(), candidate.end());
+               for (int j = 0; j < N; j++)
+                       digits += candidate[j]+'0';
+               cout << price(0, 0, 0, 0) << endl;
+        }
+        return 0;
 }
+
