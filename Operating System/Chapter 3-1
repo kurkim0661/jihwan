@@ -96,3 +96,42 @@ Terminated/Zombie State
   -모든 자원 반납 후
   -커널 내에 일부 PCB정보만 남아 있는 상태
     -이후 프로세스 관리를 위해 정보 수집
+   Z
+   
+Interrupt
+  -예상치 못한, 외부에서 발생한 이벤트
+    -Unexpected, external events
+  -인터럽트의 종류
+    -I/O interrupt
+    -Clock interrupt
+    -Console interrupt
+    -Program check interrupt
+    -Machine check interrupt
+    -Inter-process interrupt
+    -System call interrupt
+
+Processor 가 돌아가고 있을 때 Interrupt가들어오면 Kernel이 개입하게 되고
+이 때 Processor가 하고있던 내용을 PCB에 저장한다. (Context saving)
+그 후 Kernel에 있는 Interrupt handler를 이용해서 handling을 하고 ISR을 실행한다.
+그리고나서 READY상태에 있는 PCB를 가져온다. 무조건 그 전것을 진행하는 것은 아니다!!
+
+Context Switching(문맥 교환)
+
+-Context
+  -프로세스와 관련된 정보들의 집합
+    -CPU register context => in CPU
+    -Code & data, Stack, PCB=>in memory
+-Context saving
+  -현재 프로세스의 Register context를 저장하는 작업
+  
+-Context restoring
+  -Register context를 프로세스로 복구하는 작업
+  
+-Context switching
+  -실행중인 프로세스의 context를 저장하고, 앞으로 실행 할 프로세스의 context를 복구 하는 일
+  
+Context Switch Overhead
+  -Context switching에 소요되는 비용
+    -os의 성능에 큰 영향을 줌
+  -불필요한 Context switching을 줄이는 것이 중요
+    -예, 스레드 사용 등.
