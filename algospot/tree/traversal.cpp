@@ -61,3 +61,49 @@ int main(void)
         }
         return 0;
 }
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int TC;
+int N;
+
+vector<int> slice(vector<int>& v, int a, int b) {
+	return vector<int>(v.begin() + a, v.begin + b); 
+}
+
+vector<int> solve(vector<int>& pre, vector<int>& in) {
+	const int n = pre.size();
+
+	if(pre.empty()) {
+		return;
+	}
+	int root = pre[0];
+	int L_len = find(in.begin(), in.end(), root) - in.begin();
+	int R_len = n - L_len - 1;
+
+	solve(slice(pre, 1, L_len + 1), slice(in, 0, L));
+	solve(slice(pre, L+len + 1 , n), slice(in, L + 1, n));
+	cout<<root<<" ";
+}
+int main(void) {
+	inc>>TC;
+	while(TC--) {
+		cin>>N;
+		vector<int> preorder;
+		vector<int> inorder;
+		int temp;
+		for(int i = 0; i < N; i++) {
+			cin>>temp;
+			preorder.push_back(temp);
+		}
+		for(int i = 0; i < N; i++) {
+			cin>>temp;
+			inorder.push_back(temp);
+		}
+		solve(preoder, inorder);
+		cout<<endl;
+	}
+}
