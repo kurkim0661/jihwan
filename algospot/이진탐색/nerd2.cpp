@@ -175,3 +175,78 @@ int main(void)
         return 0;
 
 }
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <map>
+
+using namespace std;
+
+int TC;
+int N;
+int result;
+map<int, int> bst;
+
+
+
+
+bool IsDominated(int& x, int& y) {
+
+	map<int, int>::iterator it = bst.lower_bound(x);
+	if(it == bst.end()) {
+		return false;
+	}
+
+	return y < it->second;
+	
+}
+
+void Remove(int& x, int& y) {
+	map<int, int>::iterator it = bst.lower_bound(x);
+	if(it == bst.begin()) {
+		return ;
+	}
+	--it;
+	while(true) {
+		if(it->second > y) {
+			break;
+		}
+
+		if(it == bst.begin()) {
+			bst.erase(it);
+			break;
+		}
+		else {
+			map<int, int>::iterator jt = it;
+			--jt;
+			bst.erase(it);
+			it = jt;
+		}
+		
+	}
+	
+}
+int main(void) {
+	cin>>TC;
+	while(TC--) {
+		cin>>N;
+		int x = 0;
+		int y = 0;
+		for(int i = 0; i < N; i++) {
+			cin>>x>>y;
+			if(!IsDominated(x, y)) {
+				bst[x] = y;
+				Remove(x, y);
+				result += bst.size();
+			}
+			else {
+				result += bst.size();
+			}
+			
+			
+			
+		}
+	}
+}
+
