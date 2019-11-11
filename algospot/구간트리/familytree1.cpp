@@ -30,6 +30,7 @@ int main(void) {
 				d++;
 			}
 			deapth[i] = d;
+			d = 0;
 		}
 		deapth[0] = 0;
 		for(int i = 0; i < Q; i++) {
