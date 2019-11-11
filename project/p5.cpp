@@ -29,7 +29,15 @@ public:
 			new(&buff[i]) move(po);
 		}
 	}
+	Vector(initializer_list<T> src) : buff(new T{src}) {}
 
+	T* begin(T* src) {
+		return (&buff[0]);
+	}
+	T* end(T* src) {
+		return (&buff[sz]);
+	}
+	
 	T& resize(size_t _sz, T&& po) {
 		if(_sz > capa) {
 			T* new_buff = static_cast<T*>(operator new(sizeof(T)*_sz));
