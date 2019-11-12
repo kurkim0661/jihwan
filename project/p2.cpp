@@ -14,17 +14,14 @@ public:
 	void print() {
 		
 	}
-	template<typename T, typename ...Args> 
-	void print(T A, Args...) {
-		cout<<A<<endl;	
-	}
-	template<typename ... Types>
+	template<typename ...Types> 
 	static Type& getInstance(Types&& ...args) {
 		static Type instance(forward<Types>(args)...);
-		cout<<"템플릿 instance"<<endl;
-		print(args...);
-		//cout<<args<<endl;
 		return instance;
+	}
+
+	static Type& construct() {
+
 	}
 	/*
 	static Type& getInstance(int x, int y) {
@@ -39,7 +36,25 @@ public:
 	int x;
 	int y;
 public:
-	Cursor(int x, int y) {}	
+	Cursor(int _x, int _y) : x(_x), y(_y) {
+		cout<<"create"<<endl;
+	}
+	Cursor(const Cursor&   src) : x(src.x), y(src.y) {
+		cout<<"copy"<<endl;
+	}
+	Cursor(Cursor&& src) : x(src.x), y(src.y) {
+		cout<<"move"<<endl;
+	}
+	Cursor& operator=(const Cursor& src) {
+		x = src.x;
+		y = src.y;
+		cout<<"copy="<<endl;
+	}
+	Cursor& operator=(Cursor&& src) {
+		x = src.x;
+		y = src.y;
+		cout<<"move="<<endl;
+	}
 };
 
 class Mouse : public Singleton<Mouse>
@@ -49,8 +64,8 @@ public:
 };
 
 int main() {
-	//Mouse& c1 = Mouse::getInstance();
+	Mouse& c1 = Mouse::getInstance();
 	Cursor& c2	= Cursor::getInstance(1,2);
 	cout<<c2.x<<" "<<c2.y<<endl;
-	cout<<"ji"<<endl;
 }
+
