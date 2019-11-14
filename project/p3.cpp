@@ -9,20 +9,20 @@ class People {
 public:
 	People(string n, string add, int a) : name(n), addr(add), age(a) {}
 	People(const People& src) : name(src.name), addr(src.addr), age(src.age) {
-		cout<<copy<<endl;
+		cout<<"copy"<<endl;
 	}
-	People(People&& src) : name(move(src.name)), addr(move(src.addr)), age(a) { 
-		cout<<move<<endl;
+	People(People&& src) : name(move(src.name)), addr(move(src.addr)), age(src.age) { 
+		cout<<"move"<<endl;
 	}
 	People& operator=(const People& src) {
-		cout<<copy=<<endl;
+		cout<<"copy="<<endl;
 		name = src.name;
 		addr = src.addr;
 		age = src.age;
 		return *this;
 	}
 	People& operator=(People&& src) {
-		cout<<move=<<endl;
+		cout<<"move="<<endl;
 		name = move(src.name);
 		addr = move(src.addr);
 		age = move(src.age);
