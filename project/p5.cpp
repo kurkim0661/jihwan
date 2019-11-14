@@ -1,7 +1,10 @@
 #include <iostream>
 #include <utility>
+#include <iterator>
 //#include <initializer_list>
 using namespace std;
+
+
 class Point {
 public:
 	
@@ -31,20 +34,24 @@ template<typename T> class Vector {
 public:	
 	Vector(int _sz, T&& po) : sz(_sz), buff(static_cast<T*>(operator new(sizeof(T) * sz))), capa(_sz) {
 		for(int i = 0; i < sz; i++) {
-			new(&buff[i]) Point(po.x, po.y);
+			new(&buff[i]) T(move(po));
 		}
 	}
-	Vector(initializer_list<T> src) : buff(new T[src.size()]) {
-			for(int i =0; i < src.size(); i++) {
-				buff[i] = src[i];
+	
+	Vector(initializer_list<int> src) : buff(new T[src.size()]), sz(src.size()), capa(src.size()) {
+			int i = 0;
+			cout<<src.size()<<"size"<<endl;
+			
+			for(auto p = src.begin(); p < src.end(); p++) {
+				buff[i++] = *p;
 			}
 	}
 
-	T* begin(Vector<T>& src) {
-		return &(src->buff)[0];
+	T* begin(void) {
+		return &(buff[0]);
 	}
-	T* end(Vector<T>& src) {
-		return &(src->buff)[sz];
+	T* end(void) {
+		return &(buff[sz]);
 	}
 	
 	int size(void) {
@@ -82,6 +89,7 @@ public:
 		sz = _sz;
 		return ;
 	}
+	
 };
 
 int main() {
@@ -91,8 +99,9 @@ int main() {
 
 	cout<<v.size()<<endl;
 	cout<<v.capacity()<<endl;
-	Vector<int> v2{1,2,3,4,5,6,7,8,9,10};
-	for(auto& n : v) {
+	
+	Vector<int> v2{1,2,3,4};
+	for(auto& n : v2) {
 		cout<<n<<endl;
 	}
 	return 0;
