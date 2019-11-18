@@ -32,7 +32,7 @@ int LIScount(int start) {
 	ret = 0;
 	for(int next = start + 1; next < n; ++next) {
 			if((start == -1 ||S[start] < S[next]) 
-			&&	LIS(start) == LIS(next) + 1 ) {
+			&&	LISlen(start) == LISlen(next) + 1 ) {
 				ret = min<long long>(MAX, (long long)ret + LIScount(next));
 		}
 	}
@@ -57,8 +57,8 @@ int reconstruct(int start,int skip, vector<int>& lis) {
 			skip -= cnt;
 		}
 		else {
-			
-			reconstruct(idx,skip,)
+			reconstruct(idx,skip, lis);
+			break;
 		}	
 	}
 
