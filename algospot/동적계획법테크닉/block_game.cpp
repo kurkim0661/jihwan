@@ -66,7 +66,11 @@ int main(Void) {
 				}
 			}
 		}
-		
-		
+		if(solve(arr)) {
+			cout<<WINNING<<endl;	
+		}
+		else {
+			cout<<losing<<endl;	
+		}
 	}
 }
