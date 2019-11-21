@@ -126,7 +126,37 @@ Short-term Scheduling
       -프로세스의 상태 변화에 따라 priority 변경
       -구현이 복잡, priority 재계산 overhead가 큼
       -시스템 환경 변화에 유연한 대응 가능
+
+Basic Scheduling algorithms
+
+FCFS(First-Come-First-Service)
+  -Non-preemptive scheduling
+  -스케줄링 기준(Criteria)
+    -도착 시간(ready queue 기준)
+    -먼저 도착한 프로세스를 먼저 처리
+  -자원을 효율적으로 사용 가능
+    -High resource utilization
+  -Batch system에 적합, interactive system에 부적합
+  -단점
+    -Convoy effect
+      -하나의 수행시간이 긴 프로세스에 의해 다른 프로세들이
+       긴 대기시간을 갖게 되는 현상(대기시간>>실행시간)
+      -긴 평균 응답시간(response time)
       
+RR(Round-Robin)
+  -Preemptive scheduling
+  -스케줄링 기준(Criteria)
+    -도착 시간(ready queue 기준)
+    -먼저 도착한 프로세스를 먼저 처리
+  -자원 사용 제한시간(time quantum)이 있음
+    -System parameter(5)
+    -프로세스는 할당된 시간이 지나면 자원 반납
+       -Timer-runout
+    -특정 프로세스의 자원 독점(monopoly)방지
+    -Context switch overhead가 큼
+  -대화형, 시분할 시스템에 적합
+
+  
       
   
 
