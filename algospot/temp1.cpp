@@ -11,10 +11,10 @@ int M;
 int tc;
 string word[15];
 int sum[15][15];
-int cache[15][1<15]
+int cache[15][1<15];
 
 int solve(int last, int used) {
-	if(used == (1<<K - 1)) {
+	if(used == ((1<<K)- 1)) {
 		return 0;
 	}
 	int& ret = cache[last][used];
@@ -31,12 +31,13 @@ int solve(int last, int used) {
 }
 
 string reconstruct(int last, int used) {
-	if(used == (i<<K - 1)) {
+	if(used == ((1<<K) - 1)) {
 		return ""; 
 	}
-	int maxsum = solve(last,used);
+	
 	for(int next = 0; next < K; next++) {
-		if(maxsum == solve(next,used)) {
+		int maxsum = solve(next,used) + sum[last][next];
+		if(maxsum == solve(last,used)) {
 			return word[next].substr(sum[last][next]) + reconstruct(next, used + 1<<next);
 		}
 	}
@@ -72,9 +73,7 @@ int main(void) {
 			}
 			
 		}
-
-		
-		
+		cout<<reconstruct(K,0)<<endl;		
 	}
 	
 }
