@@ -1,0 +1,67 @@
+Eventcount/Sequencer
+
+-Sequencer
+  -정수형 변수
+  -생성시 0으로 초기화, 감소하지 않음
+  -발생 사건들의 순서 유지
+  -ticket() 연산으로만 접근 가능
+  
+-ticket(S)
+  -현재까지 ticket() 연산이 호출 된 횟수를 반환
+  -Indivisible operation
+  
+-Eventcount
+  -정수형 변수
+  -생성시 0으로 초기화, 감소하지 않음
+  -특정 사건의 발생 횟수를 기록
+  -read(E), advance(E), await(E,v) 연산으로만 접근 가능
+-read(E)
+  -현재의 Eventcount값 반환
+-advance(E)
+  -E<-E + 1
+  -E를 기다리고 있는 프로세스를 깨움(wake-up)
+-await(E, v)
+  -V는 정수형 변수
+  -if(E<v) 이면 E에 연결된 Qe에 프로세스 전달(push)
+   및 CPU scheduler 호출
+   
+-Producer-Consumer problem
+(shared variables)
+var Pticket, Cticket : sequencer,
+    In, Out :eventcount,
+    buffer : array[0..N-1] of message;
+    
+Producer Pi
+
+var t : integer;
+
+repeat
+  ...
+  Create a new message M;
+  t <- ticket(Pticket);
+  await(In, t);
+  await(Out, t - N + 1);
+  buffer[t mod N] <- M;
+  advance(In);
+  ...
+until(false)
+
+Consumer Cj
+
+var u : integer;
+
+repeat
+  ...
+  u <- ticket(Cticket);
+  await(Out, u);
+  await(In, u + 1);
+  m <- buffer[u mod N];
+  advance(Out);
+  Consume the message m;
+  ...
+until(false)
+
+-No busy waiting
+-No starvation
+  -FIFO scheduling for Qe
+-Semaphore 보다 더 low-level control 이 가능.
