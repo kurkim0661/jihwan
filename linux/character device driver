@@ -1,0 +1,647 @@
+Linux Device Driver 중 Character device 의 코드를 보면 기존의 2.6 기준으로 수정되지 않은 코드들은 register_chrdrv() 함수를 사용하여 Character device를 등록하도록 되어 있다. register_chrdrv 함수의 원형은 다음과 같다.
+
+int register_chrdev(unsigned int major, const char *name,
+      const struct file_operations *fops)
+
+그러나 2.6의 디바이스 드라이버들은 이와 다른 방식을 사용한다. register_chrdrv를 사용하는 방식은 Linux device driver 개정 3판을 보면 3장의 "예전 방식"이라는 부분에서 이를 다룬다. 예전 방식이 아닌 새로운 방식으로 작성하려면 register_chrdev 대신 register_chrdrv_region/alloc_chrdev_region 과 cdev_init, cdev_add 로 작성하면 된다.
+
+register_chrdrv_region 함수는 원하는 디바이스의 번호를 미리 알고 있을 때 사용하고, alloc_chrdev_region 함수는 디바이스의 번호를 동적으로 할당받아 파라미터로 받는 dev_t 구조체 포인터를 이용해 dev_t 구조체에 넣는다.
+register_chrdrv 대신 register_chrdrv_region을 사용하는 것으로 혼동할 수 있는데 그게 아닌 cdev_add 함수까지 사용하여야 한다. 실제 커널 소스의 register_chrdrv 함수를 보면 이런 과정이 구현되어 있음을 볼 수 있다.
+
+
+
+리눅스에서 가장 기본적이면서도 중요한 Character Device Driver( 문자 디바이스 드라이버 )를 작성해보도록 한다.
+
+문자 디바이스 드라이버는 별도의 버퍼가 없이 동작할 수 있으며, Linux Kernel에 등록되어 관리된다.
+
+( Linux Kernel에 등록되는 시기는 부팅과정에서 자동으로 될 수도 있고, 수동적으로 사용자에 의해 되는 경우도 있다. )
+
+
+
+
+
+
+
+■ 참고
+
+   - Linux Device Driver 종류 : http://blog.naver.com/dong880510/140162846919
+
+
+
+
+
+
+
+■ 준비
+
+   - Linux Kernel v2.6 이상( 반드시 v2.6 이상을 권장한다. )
+
+
+
+※ Linux Kernel v2.6 이상을 권하는 이유는?
+
+   현재 까지 가장 많이 사용되어 졌던 Linux Kernel v2.4x에서 v2.6으로 넘어오면서
+
+   장치 관리( 드라이버 관리 )에 대한 정책이 변경되어 한층 더 수월해졌다.
+
+   따라서 OS( Linux Kernel )는 장치의 Major Number만 알게 되면 사용이 가능해지며,
+
+   Minor Number에 대한 관리는 Device Driver 자체적으로 처리해 사용되어진다.
+
+   ( 즉, 커널에 등록 시 Major Number만 넘겨주면 되도록 바뀌었다. )
+
+
+
+
+
+■ 분석
+
+   먼저 Linux Kernel에서 문자 디바이스 드라이버를 생성하기 위한 필수 헤더 파일은 kernel.h와 module.h, 그리고 device.h이다.
+
+   사실 아무 동작도 하지 않는 드라이버 작성은 kernel.h도 필요가 없으나 기본적인 운용을 위해서는 필수적이다.
+
+   그 다음으로는 부수적으로 거의 대부분의 장치 드라이버를 작성하는데에 필요한 헤더들을 종합해보면 다음과 같다.
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+    #include <linux/module.h>
+
+    #include <linux/kernel.h>
+
+    #include <linux/fs.h>
+
+    #include <linux/device.h>
+
+    #include <linux/unistd.h>
+
+    #include <linux/errno.h>
+
+    #include <asm/uaccess.h>
+
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+   각 헤더파일의 용도는 주로 파일 입/출력 혹은 시스템 콜, 에러 처리 등을 위한 것들이므로, 왠만하면 전부 추가해서 사용하도록 한다.
+
+
+
+
+
+   다음은 디바이스 드라이버의 핵심 뼈대 부분을 살펴보도록 한다.
+
+   모든 문자 디바이스 드라이버는 module_init과 module_exit 매크로( Macro )를 사용하는데,
+
+   말 그대로 Module의 초기화와 종료 시 호출 시킬 함수를 인자로 넣어주는 것이다.
+
+
+
+
+
+   예를 들면, 다음과 같은 상태로 작성하면 된다.
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+    module_init( Drv_init );
+
+    module_exit( Drv_exit );
+
+
+
+    static int Drv_init(void);
+
+    static int Drv_exit(void);
+
+
+
+    static int Drv_init()
+
+    {
+
+             ~~~~
+
+    }
+
+
+
+    static int Drv_exit()
+
+    {
+
+             ~~~~
+
+    }
+
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+
+
+   이 부분에서 주의해야 할 점은, 장치 드라이버를 작성하는데에 사용되어지는 함수들은 모두 표준 규격을 지켜야 한다는 점이다.
+
+   함수의 리턴 값, 인자 등이 표준을 따르지 않게 되면 동작에 실패하거나 얘기치 못한 동작을 일으키게 되므로 반드시 주의한다.
+
+
+
+   
+
+
+
+   이제 드라이버 작성의 필수 요소( 정의, 구조체 등 )들을 살펴보도록 한다.
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+    #define _TRUE_          0
+
+    #define _FALSE_        -1
+
+
+
+    #define DEVICE_NAME "TestDrv"
+
+
+
+    static dev_t stDev;
+
+    static struct cdev stCDev;
+
+    struct class *stClass;
+
+
+
+    static const struct file_operations fops =
+
+    {
+
+          .owner     = THIS_MODULE,
+
+          .open       = TestDrv_open,
+
+          .ioctl        = TestDrv_ioctl,
+
+          .release   = TestDrv_release,
+
+    };
+
+
+
+    MODULE_LICENSE("Dual BSD/GPL");
+
+    MODULE_AUTHOR("D.C. LEE");
+
+    MODULE_DESCRIPTION("Test Driver");
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+   DEVICE_NAME은 말 그대로 장치의 고유한 이름이다.
+
+   Major Number를 제외한 장치를 식별할 수 있는 유일한 것으로 중복이 일어나지 않도록 주의해서 작성한다.
+
+   또한, 마지막 부분의 MODULE_xxx 는 해당 장치에 대한 설명 부분이다. 이 부분은 생략이 되어도 무방하다.
+
+
+
+   
+
+   dev_t의 형태로 선언된 구조체는 장치의 정보를 저장하는 구조체이다.
+
+   장치의 이름, 주 번호, 부 번호 등을 가지고 있는 가장 기본적인 구조체이다.
+
+
+
+   cdev 형식의 stCDev는 장치의 고유한 이름을 가지고 생성되는 구조체이다.
+
+   장치의 각 기능들에 대한 함수들( open, release, ioctl 등 )을 실질적으로 연결시켜주는 역할을 한다.
+
+   class 형태를 갖춘 stClass는 실제 Kernel에서 Device의 정보를 가지고 있는 클래스이다.
+
+
+
+   file_operations형식의 fops는 형태 선언이 아닌 실 선언이라는 점에 주의하자. ( 즉, 뼈대만이 아닌 뼈대 + 실제 값 저장 )
+
+   fops에는 모듈의 소유자부터 각 기능들에 대한 연결되는 함수들을 지정해두는 작업을 수행한다.
+
+   이 구조체를 이용해 cdev와 stClass가 완성이 되게 되며, 실제로 드라이버를 운용하는데에 지정된 함수를 사용한다.
+
+
+
+   
+
+   이제 실제로 위에서 설명한 필수 요소들을 이용해 모듈 초기화 함수를 작성해 본다.
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+    static int TestDrv_init()
+
+    {
+
+             int _ERR_;
+
+
+
+             _ERR_ = alloc_chrdev_region( &stDev, 0, 1, DEVICE_NAME );
+
+
+
+             if( _ERR_ < 0 )
+
+             {
+
+                   ~~~
+
+             }
+
+
+
+             stClass = class_create( THIS_MODULE, DEVICE_NAME );
+
+
+
+             cdev_init( &stCDev, &fops );
+
+             _ERR_ = cdev_add( &stCDev, stDev, 1 );
+
+
+
+             if( _ERR_ < 0 )
+
+             {
+
+                   ~~~
+
+             }
+
+
+
+             device_create( stClass, NULL, stDev, NULL, DEVICE_NAME );
+
+
+
+             return _TRUE_;
+
+    };
+
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+   어떤 드라이버를 제작하든지 위와 같은 절차를 준수하는 것이 중요하다.
+
+   물론 위에서 사용한 함수와 절차 중에서 필수적인 요소가 아닌 것도 있는데,
+
+   항상 표준을 지키면서 프로그래밍 하는 것이 본인에게도, 타인에게도 중요한 점이다.
+
+   ( 실제로도 표준을 잘 지키지 않게 되면 원인 불명의 에러를 유발하기도 한다. )
+
+
+
+   또한, Unix 기반의 시스템( Linux 포함 )에서 return value는 TRUE가 0이고, FALSE가 -1인 점에도 항상 주의하자.
+
+   ( 이 예제에서는 TRUE와 FALSE를 나름대로 제정의 해서 사용했지만 기본 정의인 TRUE, FALSE를 사용하도록 하자. )
+
+
+
+
+
+   이 부분에 대한 설명을 하자면, Linux Kernel v2.6 이상 환경의 디바이스 드라이버 작성에서의 가장 중요한 부분이다,
+
+   기존에 Linux Kernel v2.6 미만의 버전이었던 경우에는 사용자가 직접 Major Number, Minor Number 등을
+
+   수동으로 지정하고 관리를 해줬어야 했기 때문에 고려해야 했던 것들이 많았으나,
+
+   위에 제시된 일련의 과정을 거치면 자동으로 각 정보가 할당되며 디바이스 등록과 관련된 문제들을 사전에 방지한다.
+
+   ( 기존의 방식은 수동 할당이기 때문에 장치 간 충돌, 연결 오류, 연결 실패 등의 문제를 유발했었다. )
+
+
+
+
+
+
+
+
+
+   초기화 함수의 작성이 끝나면, 짝이 되는 종료 함수를 작성해보도록 한다.
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+    static int TestDrv_exit()
+
+    {
+
+             unregister_chrdev_region( stDev, 1 );
+
+
+
+             cdev_del( &stCDev );
+
+             device_destroy( stClass, stCDev.dev );
+
+             class_destroy( stClass );
+
+
+
+             return _TRUE_;
+
+    };
+
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+   앞서 설명 했던 초기화 함수에서 생성하고 사용한 각 변수들( 구조체, 클래스 등 )을 다시 시스템에 반납하고 
+
+   Linux Kernel에 등록했던 문자 디바이스 드라이버를 꺼내오는 작업을 수행한다.
+
+
+
+   만약 이 부분의 작성이 잘 이루어지지 않으면 다시 드라이버를 호출했을 때 중복 문제로 인해 정상적으로 동작하지 않는다.
+
+   따라서 초기화 함수에서 드라이버를 올리는데에 사용된 각종 구조체와 클래스 등을 잘 반납하고 드라이버 등록을 해제하도록 한다.
+
+
+
+
+
+
+
+
+
+   다음은 Application에서 해당 드라이버를 사용하고자 연결 / 해제할 때 사용될 함수를 구현해보자.
+
+   실제로 Application을 작성할 때 드라이버를 사용하기 위해선 open 함수를 사용한다.
+
+   반대로 Application에서 해당 디바이스 드라이버를 사용 종료할 땐 close 함수를 사용한다.
+
+   ( 즉, System으로부터 장치 드라이버를 위한 File Descriptor ( 파일 지시자 )를 받아 사용한 후 이를 반납한다. )
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+    int TestDrv_open( struct inode *inode_p, struct file *fp )
+
+    {
+
+             ~~~~~~~~~
+
+             return _TRUE_;
+
+    };
+
+
+
+    int TestDrv_release( struct inode *inode_p, struct file *fp )
+
+    {
+
+             ~~~~~~~~~
+
+             return _TRUE_;
+
+    };
+
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+   이 함수들은 file_operation 구조체에서 각 함수의 호출( open, release, ioctl )과 연결되어 있다.
+
+   따라서 실제로 open( "/dev/TestDrv" )를 한 경우에 해당 디바이스 드라이버의 open 함수가 실행되도록 구현되어있다.
+
+   두 함수들의 매개변수( Parameter )들은 기본 형식이므로 수정하지 않도록 주의한다.
+
+   ( 즉, 실제로 Open Function System Call이 일어났을 경우 자동적으로 넘겨주는 것들이다. )
+
+
+
+   다른 함수들도 마찬가지로 구성되어있으며, 따라서 각 경우에 맞는 역할을 수행하도록 내용을 작성한다.
+
+
+
+
+
+
+
+   마지막으로, 디바이스 드라이버에서 가장 활용 용도가 무궁무진한 ioctl이 남아있다.
+
+   I/O를 Control한다는 의미의 이 함수는, 말 그대로 입/출력을 제어할 수 있는 함수로 사용된다.
+
+
+
+   우선 ioctl의 매개변수는 일반적인 함수들과는 다르게 4종류 이다.( 기본 2개 + 전용 2개 )
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+    int TestDrv_ioctl( struct inode *inode_p, struct file *fp, unsigned int command, unsigned long args )
+
+    {
+
+             ~~~~~~~~~
+
+             return _TRUE_;
+
+    };
+
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+   실제로 Application에서도 ioctl 함수를 이용해 디바이스 드라이버를 이용하게 되면 이 함수가 자동으로 호출된다.
+
+   
+
+   ioctl의 용도는 매우 다양해질 수 있는데
+
+   바로 Unsigned Integer 형식의 command와 Unsigned Long 형식의 args가 결합되기 때문이다.
+
+   따라서 Command의 종류에 따라 각각의 인자들이 따로 들어올 수 있는 구조라서 더욱 더 편리하다.
+
+   ( 인자의 자료형이 Unsigned long이기 때문에 배열, 벡터 등의 자료들도 메모리 주소로 대입이 가능하다. )
+
+
+
+
+
+
+
+
+
+   마지막으로 실제로 Application에서 해당 디바이스 드라이버를 제어하는 간단한 코드는 다음과 같다.
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+     int main(void)
+
+     {
+
+           char Command;
+
+
+
+           fdDrv = open( DEVICE_NAME, O_RDWR, 777 );
+
+
+
+           if( fdCGDrv < 0 )
+
+           {
+
+                  return FALSE;
+
+           }
+
+
+
+           while(1)
+
+           {
+
+                  printf(" Command>> ");  scanf( "%c", &Command );
+
+
+
+                  switch( Command )
+
+                  {
+
+                        case 'T':
+
+                        {
+
+                              ioctl( fdDrv, 0, 0 );
+
+                              break;
+
+                        }
+
+
+
+
+
+                 ~~~~~~~~~
+                  }
+          }
+
+          close( fdDrv );
+          return 0;
+    }
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+
+다음은 위에서 설명한 device driver의 소스에 나오는 구조체 및 함수의 원형 및 설명이다.
+
+
+
+struct cdev {
+
+struct kobject kobj;
+
+struct module *owner;
+
+struct file_operations *ops;
+
+struct list_head list;
+
+dev_t dev;
+
+unsigned int count;
+
+};
+
+- 필드 설명
+
+kobj kobject 객체
+
+owner 모듈의 소유자로, 내부적으로 모듈의 ID정도로 사용된다. 일반적으로 THIS_MODULE 로 설정
+
+ops 파일 오퍼레이션을 지정한다.
+
+list 연결 리스트
+
+dev 디바이스 번호
+
+count 디바이스 개수
+
+
+
+☆ void cdev_init(struct cdev *cdev, struct file_operations *fops)
+
+
+
+☆ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
+
+문자 디바이스에 대한 객체의 관리는 cdev_map를 통해 디바이스 번호와 매핑이 된다. 이 함수는 cdev_map에 dev 라는
+
+디바이스 번호를 등록한다.
+
+count는 the number of consecutive minor numbers corresponding to this device( 보통 1로 하는 것 같다. )
+
+
+
+☆ void cdev_del(struct cdev *p)
+
+
+
+☆ int register_chrdev_region(dev_t from, unsigned count, const char *name)
+
+cdev_init를 통해 cdev를 초기화 하기 전에 호출된다. 이는 name의 문자 디바이스를 from에 해당하는 major와 minor 번
+
+호에서 부터 시작해서 count 개수 만큼의 디바이스를 할당 받는다. 본 함수는 <linux/fs.h>에 선언되어 있다.
+
+경우에 따라서는 디바이스 번호를 동적으로 할당 받고자 할 때가 있을 것이다. 이런 경우엔 reigster_chrdev_region 대신
+
+alloc_chrdev_region을 사용한다.
+
+주의할 점은 count 값에 따라 시작 디바이스의 major 번호와 마지막 디바이스의 major 번호가 서로 다를 수가 있다.
+
+
+
+☆ int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name);
+
+디바이스 번호를 동적으로 할당 받고자 할 때 register_chrdev_region 대신 사용한다. 해제할 때는 디바이스 번호를 알고
+
+있으므로 unregister_chrdev_region을 사용한다.
+
+dev는 할당 받은 디바이스 번호를 넘겨 받을 포인터이다. name이라는 이름을 갖는 문자형 디바이스를 디바이스 번호
+
+의 minor 번호는 baseminor로 시작해서 count 개수 만큼 할당 받는다.
+
+
+
+☆ void unregister_chrdev_region(dev_t from, unsigned count)
+
+register_crhdev_region의 대응 함수로, from에서 count 개수 만큼 할당 받은 디바이스의 자원을 반환한다. 본 함수는
+
+<linux/fs.h>에 선언되어 있다.
+
+
+
+
+
+출 처 : http://www.cemware.com/ad/cms/cms.php?mid=technology&pid=14&page=0
+
+출 처 : http://blog.dasomoli.org/tag/cdev_init
+
+출처: https://iamswdeveloper.tistory.com/entry/커널-26-문자-디바이스-드라이버-작성 [Go]
