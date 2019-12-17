@@ -45,3 +45,4 @@ X(name, type, len)\
 X(name, type, len)\
 X(name, type, len)
 
+ret = &get_table_info()[0][index];
