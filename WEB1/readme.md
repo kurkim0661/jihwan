@@ -19,4 +19,5 @@ ex) <img src="pwd" width="100%">
 
 7.title : 제목 정하기.
 
-7.table : 테이블 작성 
+8. a : 링크 달기.
+ex) <a href="https://www.w3.org/" target="_blank" title="W3C main homepage">W3C</a>
