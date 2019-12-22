@@ -21,3 +21,11 @@ ex) <img src="pwd" width="100%">
 
 8. a : 링크 달기.
 ex) <a href="https://www.w3.org/" target="_blank" title="W3C main homepage">W3C</a>
+
+CSS
+<style>
+  a{
+    color: black;
+    text-decoration: none;
+  }
+</style>
