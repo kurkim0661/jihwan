@@ -28,7 +28,7 @@ public:
 			delete mRealSubject;
 		}
 	}
-	void request(void)
+	void request(void) override
 	{
 		if(mRealSubject)
 		{
