@@ -1,3 +1,8 @@
+객체와 객체의 그룹을 구분없이 하나의 인터페이스로 다룰 수 있게 한다.
+객체와 구성을 트리로 구성하여 하나의 인터페이스에서 사용하도록 고려한 패턴이다.
+
+	
+	
 #include <iostream>
 #include <list>
 #include <algorithm>
