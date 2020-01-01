@@ -126,6 +126,9 @@ int main(void)
 #endif 
 
 #if 1 //스마트 포인터 shared ptr을 활용한 싱글턴 패턴.
+std::call_once()는 std::once_flag()와 함께 사용하여 복수의 Thread환경에서 특정 함수를 단 한 번만 구동되도록 할 수 있습니다.
+이러한 호출을 'Effective Call Once Invocation'라고 합니다.
+
 template<typename T>
 class Singleton
 {
