@@ -1,4 +1,4 @@
-Facade Pattern
+Facade Pattern //
 
 통일된 인터페이스를 통해 복잡한 서브시스템들을 간단히 사용하도록 만든 패턴이다.
 
