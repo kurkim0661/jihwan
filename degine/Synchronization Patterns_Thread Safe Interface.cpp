@@ -1,4 +1,4 @@
-Synchronization Patterns
+Synchronization Patterns /// Type : Thread Safe Interface
 선언된 스코프의 범위 내에섬나 적용되는 동기화 디자인 패턴
 생성자, 소멸자 기능을 시용한 패턴으로써 동기화가 적용되는 범위를 스코프 에서 사용되도록 한다.
 
