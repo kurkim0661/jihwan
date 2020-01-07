@@ -47,3 +47,69 @@ int main(void)
 	ConcreteAdapterB pClassAdapter;
 	pClassAdapter.operation();
 }
+////////////////////예제코드
+#include <iostream>
+#include <string>
+using namespace std; 
+
+
+//The class for changing number to string.
+class CstrData
+{
+public:
+	CstrData(const char* data)
+		: m_strData(data) {}
+
+	const char* GetString() const
+	{
+		return m_strData.c_str();
+	}
+
+private:
+	string m_strData;
+};
+
+//definition of Adapter interface 
+class Adapter
+{
+public:
+	virtual int operation() = 0;
+};
+
+//ConcreteAdapterA class (object adapter pattern)
+class ConcreteAdapterA : public Adapter
+{
+public:
+	ConcreteAdapterA(const char* data)
+		:m_StrData(data) {}
+
+	int operation(void) override
+	{
+		return atoi(m_StrData.GetString());
+	}
+private:
+	CstrData m_StrData;
+};
+//ConcreteAdapterB class (class adapter pattern)
+class ConcreteAdapterB : public Adapter, public CstrData
+{
+public:
+	ConcreteAdapterB(const char* data) : CstrData(data){}
+	int operation() override
+	{
+		return atoi(GetString());
+	}
+};
+
+int main(void)
+{
+	ConcreteAdapterA Adapter1("12345");
+	ConcreteAdapterB Adapter2("54321");
+
+	int data1 = Adapter1.operation();
+	int data2 = Adapter2.operation();
+	int data3 = data1 + data2;
+	cout<<data1<<endl;
+	cout<<data2<<endl;
+	cout<<data3<<endl;
+}
