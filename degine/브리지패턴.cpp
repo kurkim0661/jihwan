@@ -57,4 +57,93 @@ int main(void)
 	mA.operation();
 	mB.operation();
 }
+
+/////////////
+#include <iostream>
+using namespace std;
+
+class process;
+class person
+{
+public:
+	virtual void operation(void) = 0;
+};
+
+class cooker : public person
+{
+public:
+	cooker(process* p)
+		: m_process(p){}
+	~cooker()
+	{
+		if(m_process)
+			delete m_process;
+	}
+	void operation(void) override
+	{
+		m_process->operation();
+	}
+
+private:
+	process* m_process;
+};
+
+class cleaner : public person
+{
+public:
+
+	cleaner(process* p)
+		:m_process(p){}
+
+	cleaner()
+	{
+		if(m_process)
+			delete m_process;
+	}
+	void operation(void) override
+	{
+		m_process->operation();
+	}
+
+private:
+	process* m_process;
+};
+class process
+{
+public:
+	virtual void operation(void) = 0;
+
+};
+
+class cooking : public process
+{
+public:
+	void operation(void) override
+	{
+		cout<<"요리를 한다."<<endl;
+	}
+};
+
+class cleaning : public process
+{
+public:
+	void operation(void) override
+	{
+		cout<<"청소를 한다."<<endl;
+	}
+};
+
+int main(void)
+{
+	person* man1 = new cooker(new cooking());
+	person* man2 = new cleaner(new cleaning());
+
+	man1->operation();
+	man2->operation();
+
+	delete man2;
+	delete man1;
+}
+
+이거 런 안되더라.
 	
