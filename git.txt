@@ -1,0 +1,21 @@
+수정내용 commit
+git pull   -  server source로 update
+git status – Local과 server 사이에 수정된 파일 표시
+git diff – 수정된 파일 내용표시
+git add .  – 수정된 내용 추가
+git commit . – 레파지토리 등록
+repo upload . – 서버에 올리는 명
+
+repo init -u ssh://vgit.lge.com:29430/vw/qnx/ICAS3/manifest -b meb_icas3_release --reference=~vc.integrator/mirror/meb_icas3_release
+repo sync -cq -j4
+repo start meb_icas3_release --all
+
+repo forall -c git pull
+
+git reset HEAD~n n개만큼 올린다
+git checkout -f 돌리고
+git pull 해서 깨끗하게
+
+
+삭제 tip
+git rm --cached <fileName> 를 써서 Untracked 상태로 만든다.
