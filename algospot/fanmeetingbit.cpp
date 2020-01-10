@@ -1,3 +1,4 @@
+check 1 
 #include <cstdio>
 #include <string.h>
 using namespace std;
