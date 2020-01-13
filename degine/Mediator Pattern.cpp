@@ -97,3 +97,90 @@ int main(void)
 	return 0;
 	
 }
+--------------------
+	#include <iostream>
+#include <string>
+#include <list>
+#include <algorithm>
+using namespace std;
+class Collegue;
+
+
+class Mediator
+{
+public:
+	virtual void AppendUser(Collegue* c) = 0;
+	virtual void RemoveUser(Collegue* c) = 0;
+	virtual void SendMessages(string m, Collegue* sender) = 0;
+};
+
+
+class Collegue
+{
+protected:
+	string m_name;
+	Mediator* m_mediator;
+
+public:
+	Collegue(Mediator* m, string str)
+		:m_mediator(m), m_name(str){}
+	virtual void ReceiveMessages(string m) = 0;
+	virtual void SendMessages(string m) = 0;
+};
+
+class User : public Collegue
+{
+public:
+	User(Mediator* m, string str)
+		:Collegue(m, str){}
+	void ReceiveMessages(string m)
+	{
+		cout<<"Receive : "<<m<<endl;
+	}
+
+	void SendMessages(string m)
+	{
+		cout<<"Send : "<<m<<endl;
+		m_mediator->SendMessages(m, this);
+	}
+};
+class ChatMediator : public Mediator
+{
+private:
+	list<Collegue*> m_list;
+public:
+	void AppendUser(Collegue * c)
+	{
+		m_list.push_back(c);
+	}
+	void RemoveUser(Collegue * c)
+	{
+		m_list.remove(c);
+	}
+	void SendMessages(string m, Collegue* sender)
+	{
+		for(auto itr : m_list)
+		{
+			if(itr != sender)
+			{
+				itr->ReceiveMessages(m);
+			}
+		}
+	}
+};
+int main(void)
+{
+	ChatMediator p_mediator;
+	User usr1(&p_mediator, "홍길동");
+	User usr2(&p_mediator, "심청이");
+	User usr3(&p_mediator, "르브론 제임스");
+	p_mediator.AppendUser(&usr1);
+	p_mediator.AppendUser(&usr2);
+	p_mediator.AppendUser(&usr3);
+
+	usr1.SendMessages("나는 홍길동.");
+	usr2.SendMessages("나는 심청이.");
+	
+}
+정의의 순서가 굉장히 중요하다.
+
