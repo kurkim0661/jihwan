@@ -208,3 +208,181 @@ int main(void)
 	return 0;
 }
 };
+
+------------------예제 코드
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Iterator;
+class Element
+{
+public:
+	Element(string str) : data(str){}
+	string data;
+};
+
+class Aggregate
+{
+public:
+	Aggregate()
+		:mStackPoint(-1){}
+
+	friend class Iterator;
+	virtual Iterator* CreateIterator(void) = 0;
+	virtual void push(Element* p_element) = 0;
+	virtual Element* pop(void) = 0;
+	virtual Element* GetElement(int idx) = 0;
+	bool IsEmpty(void) 
+	{
+		return mStackPoint == -1;
+	}
+	int GetStackpoint(void)
+	{
+		return mStackPoint;
+	}
+protected:
+	int mStackPoint;
+};
+
+
+const int STACK_SIZE = 10;
+class Stack : public Aggregate
+{
+public:
+	Iterator* CreateIterator(void);
+	void push(Element* pElement)
+	{
+		if(mStackPoint + 1 < STACK_SIZE)
+		{
+			m_item[++mStackPoint] = pElement;
+		}
+		else
+		{
+			cout<<"Stack  is Full"<<endl;
+		}
+	}
+	Element* pop(void)
+	{
+		if(!IsEmpty())
+		{
+			return m_item[mStackPoint--];
+		}
+		else
+		{
+			cout<<"Stack is Empty"<<endl;
+		}
+		return nullptr;
+	}
+
+	Element* GetElement(int idx)
+	{
+		return m_item[idx];
+	}
+private:
+	Element* m_item[STACK_SIZE];
+};
+
+class Iterator
+{
+public:
+	virtual	void first(void) = 0;
+	virtual Element* GetItem(void) = 0;
+	virtual bool IsDone(void) = 0;
+	virtual void next(void) = 0;
+};
+
+class StackIterator : public Iterator
+{
+public:
+	StackIterator(Aggregate* a)
+		: m_Aggreagte(a), mIdx(0){}
+	~StackIterator()
+	{
+		if(m_Aggreagte)
+			delete m_Aggreagte;
+	}
+	void first(void) override
+	{
+		mIdx = 0;
+	}
+	void next(void ) override
+	{
+		mIdx++;
+	}
+	bool IsDone(void) override
+	{
+		return mIdx == (m_Aggreagte->GetStackpoint() + 1);
+	}
+	Element* GetItem(void) override
+	{
+		return m_Aggreagte->GetElement(mIdx);
+	}
+private:
+	Aggregate* m_Aggreagte;
+	int mIdx = 0;
+};
+
+Iterator* Stack::CreateIterator(void)
+{
+	return new StackIterator(this);
+}
+
+class IteratorPtr
+{
+public:
+	IteratorPtr(Iterator* it)
+		:m_itr(it){}
+	~IteratorPtr()
+	{
+		delete m_itr;
+	}
+
+	Iterator* operator->()
+	{
+		return m_itr;
+	}
+	Iterator& operator*()
+	{
+		return *m_itr;
+	}
+
+protected:
+	IteratorPtr(const IteratorPtr& rhs);
+	IteratorPtr& operator=(const IteratorPtr& rhs);
+private:
+	Iterator* m_itr;
+};
+void PrintData(IteratorPtr& it)
+{
+	cout<<"~~~~~~~~<Print Stack>~~~~~~~~~~~~"<<endl;
+	for(it->first(); !it->IsDone(); it->next())
+	{
+		cout<<it->GetItem()->data<<endl;
+	}
+	cout<<"~~~~~~~~end~~~~~~~~~"<<endl;
+}
+
+int main(void)
+{
+	Element a("a"), b("b"), c("c"), d("d"), e("e");
+
+	Stack stack;
+	stack.push(&a);
+	stack.push(&b);
+	stack.push(&c);
+	stack.push(&d);
+	stack.push(&e);
+
+	IteratorPtr it((StackIterator*)stack.CreateIterator());
+	PrintData(it);
+
+	Element* p1 = stack.pop();
+	Element* p2 = stack.pop();
+	cout<<"pop 1 : "<<p1->data<<endl;
+	cout<<"pop 2 : "<<p2->data<<endl;
+
+}
+
+
+
